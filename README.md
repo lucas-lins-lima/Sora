@@ -88,14 +88,172 @@ Crie uma pasta principal para o seu projeto, por exemplo, sora_robot/.
 * **2.Crie a Estrutura de Pastas:**
 Dentro de sora_robot/, crie manualmente todas as pastas e subpastas conforme a "Estrutura de Pastas e Arquivos" detalhada acima. Lembre-se de criar os arquivos __init__.py vazios em cada subpasta para que o Python os reconheça como pacotes.
 
-Exemplo para algumas pastas:
+Script para criar a estrutura de pastas e arquivos:
 ```
-mkdir sora_robot
+#!/bin/bash
+echo "Iniciando a criação da estrutura de pastas para o projeto Sora..."
+
+# 1. Cria o diretório raiz do projeto
+mkdir -p sora_robot
 cd sora_robot
-mkdir utils data data/user_profiles data/knowledge_base data/collected_data data/collected_data/raw_sensor_logs
-mkdir vision_processing audio_processing nlp response_generation action_execution
-mkdir backend_api frontend frontend/assets assets assets/avatar_animations
-touch utils/__init__.py data/__init__.py data/user_profiles/__init__.py data/knowledge_base/__init__.py data/collected_data/__init__.py data/collected_data/raw_sensor_logs/__init__.py
-touch vision_processing/__init__.py audio_processing/__init__.py nlp/__init__.py response_generation/__init__.py action_execution/__init__.py
-touch backend_api/__init__.py action_execution/__init__.py
+
+# 2. Cria os diretórios principais
+mkdir -p utils data vision_processing audio_processing nlp response_generation action_execution backend_api frontend assets
+
+# 3. Cria subdiretórios dentro de 'data'
+mkdir -p data/user_profiles
+mkdir -p data/knowledge_base
+mkdir -p data/collected_data
+mkdir -p data/collected_data/raw_sensor_logs
+
+# 4. Cria subdiretórios dentro de 'frontend' e 'assets'
+mkdir -p frontend/assets
+mkdir -p assets/avatar_animations # Onde os vídeos de animação MP4 serão armazenados
+
+# 5. Cria os arquivos __init__.py para cada pacote Python
+echo "Criando arquivos __init__.py..."
+touch utils/__init__.py
+touch data/__init__.py
+touch data/user_profiles/__init__.py
+touch data/knowledge_base/__init__.py
+touch data/collected_data/__init__.py
+touch data/collected_data/raw_sensor_logs/__init__.py
+touch vision_processing/__init__.py
+touch audio_processing/__init__.py
+touch nlp/__init__.py
+touch response_generation/__init__.py
+touch action_execution/__init__.py
+touch backend_api/__init__.py
+
+echo "Estrutura de pastas e arquivos __init__.py criados com sucesso!"
+echo "Agora você pode prosseguir com a criação dos arquivos .py principais e de dados."
 ```
+* **3.Crie os Arquivos Python e de Configuração:**
+Crie cada arquivo .py e .txt nas suas respectivas pastas e cole o código fornecido nos artefatos anteriores (main.py, config.py, logger.py, etc.).
+
+* **4.Crie os Arquivos do Frontend:**
+Crie index.html, style.css e script.js na pasta frontend/ e cole o código fornecido nos artefatos.
+
+* **5.Configure as Chaves de API (config.py):**
+Abra o arquivo sora_robot/config.py e substitua os placeholders ("SUA_CHAVE_API_...") pelas suas chaves de API reais para os serviços do Google (Speech-to-Text, Text-to-Speech) e Gemini.
+```
+# sora_robot/config.py
+API_KEYS = {
+    "google_speech_to_text": "SUA_CHAVE_API_GOOGLE_SPEECH_TO_TEXT_AQUI",
+    "google_text_to_speech": "SUA_CHAVE_API_GOOGLE_TEXT_TO_SPEECH_AQUI",
+    "gemini": "SUA_CHAVE_API_GEMINI_AQUI",
+}
+```
+Você também pode ajustar CAMERA_INDEX, MICROPHONE_DEVICE_INDEX, API_SERVER_HOST, API_SERVER_PORT e LOG_LEVEL se necessário.
+
+* **6.Crie Arquivos de Dados Iniciais:**
+Crie os seguintes arquivos vazios ou com conteúdo inicial básico para o sistema de dados:
+
+- sora_robot/data/user_profiles/profiles.json
+```
+  {}
+```
+- sora_robot/data/knowledge_base/event_info.json
+```
+  {
+  "agenda": "A agenda completa está disponível no site do evento.",
+  "localizacao_estandes": "Os estandes principais estão no Pavilhão Azul.",
+  "contato_suporte": "Para suporte, procure a equipe com crachás azuis.",
+  "redes_sociais": "Use #SoraEvent nas redes sociais para compartilhar sua experiência!"
+}
+```
+- sora_robot/data/collected_data/interaction_logs.jsonl (arquivo vazio, será preenchido automaticamente)
+
+- sora_robot/data/collected_data/learning_data.jsonl (arquivo vazio, será preenchido automaticamente)
+
+* **7.Crie Arquivos de Animação do Avatar:**
+Na pasta sora_robot/assets/avatar_animations/, você precisará colocar seus arquivos de vídeo MP4 que representam as animações do avatar. Certifique-se de que os nomes dos arquivos correspondem aos mapeamentos definidos em response_generation/avatar_animation.py. Por exemplo, se animation_map["neutral"] aponta para neutral.mp4, certifique-se de que sora_robot/assets/avatar_animations/neutral.mp4 exista.
+
+Exemplos de nomes de arquivos MP4 esperados:
+```
+neutral.mp4
+speaking_loop.mp4
+happy.mp4
+sad.mp4
+angry.mp4
+surprised.mp4
+fear.mp4
+disgust.mp4
+agitated_gesture.mp4
+attentive_pose.mp4
+wave_gesture.mp4
+```
+**3. Instalação das Dependências**
+Abra seu terminal, navegue até o diretório raiz do projeto (sora_robot/) e execute o seguinte comando para instalar todas as bibliotecas Python necessárias:
+```
+pip install -r requirements.txt
+```
+**4. Executando o Projeto**
+Após a configuração, você pode iniciar o robô Sora e o servidor da API.
+
+- 1.Inicie o Backend:
+No terminal, a partir do diretório sora_robot/, execute:
+```
+python main.py
+```
+- 2.Acesse o Frontend:
+Abra seu navegador web (Google Chrome, Firefox, etc.) e navegue para o seguinte endereço:
+```
+http://127.0.0.1:5000/
+```
+A interface do Sora deverá carregar, exibir o avatar e permitir que você interaja via chat.
+
+# Mapa de Conexões de Arquivos
+Entender como os arquivos do projeto Sora se conectam é crucial para depuração e atualização. O main.py atua como o orquestrador central, instanciando e chamando os métodos dos outros módulos. As setas (→) indicam a direção da dependência ou do fluxo de informações.
+
++-------------------+                                                                +------------------+
+|   frontend/       |                                                                |   backend_api/   |
+|                   |                                                                |   api_server.py  |
+| - index.html      |<---------- HTTPS/WebSocket -----------------------------------|                  |
+| - style.css       |                                                                |------------------+
+| - script.js       |                                                                         | (global vars)
+|                   |                                                                         |
++-------------------+                                                                         v
+                                                                                           +-------------+
+                                                                                           |   main.py   |
+                                                                                           |  (Orquestra)|
+                                                                                           +-------------+
+                                                                                                  |
+                                                      +---------------------------------------------+---------------------------------------------+
+                                                      |                                             |                                             |
+                                                      v                                             v                                             v
++-----------------------+           +-----------------------+           +-----------------------+           +-----------------------+           +-----------------------+
+|  utils/               |           |  data/                |           |  vision_processing/   |           |  audio_processing/    |           |  nlp/                 |
+|                       |           |                       |           |                       |           |                       |           |                       |
+| - logger.py   <-------+-----------+ - user_profiles/      |           | - camera_handler.py   |<----------+ - microphone_handler.py |           | - sentiment_analysis.py |
+| - constants.py<-------------------+ - knowledge_base/     |           | - facial_recognition.py --+         |                       |           | - intent_recognition.py |
++-----------------------+           | - collected_data/     |           | - body_pose_estimation.py--+       | - speech_recognition.py |<----------+                       |
+                                    |   - interaction_logs.py |           |                       |           | - audio_analysis.py   |           |                       |
+                                    |   - learning_data_manager.py|<-------+ emotion_analysis.py <--+-----------+-----------------------+           |                       |
+                                    +-----------------------+                                       |                                             |
+                                               ^                                                    |                                             |
+                                               | (dialogue_manager logs)                             |                                             v
+                                               |                                                     |                                   +-------------------+
+                                               |                                                     |                                   |  dialogue_manager.py|
+                                               |                                                     |                                   +-------------------+
+                                               |                                                     |                                             |
+                                               +-----------------------------------------------------+---------------------------------------------+
+                                                                                                     | (Context, Estado do Diálogo)
+                                                                                                     v
+                                                                                           +-----------------------+
+                                                                                           |  response_generation/ |
+                                                                                           |                       |
+                                                                                           | - llm_integration.py  |<----------------------------+
+                                                                                           | - avatar_animation.py |<----------------------------+
+                                                                                           |                       |
+                                                                                           +-----------------------+
+                                                                                                     |
+                                                      +----------------------------------------------+---------------------------------------------+
+                                                      |                                              |
+                                                      v                                              v
+                                            +-----------------------+                     +-----------------------+
+                                            |  action_execution/    |                     | video_animation_player.py |
+                                            |                       |                     |                       |
+                                            | - speech_synthesis.py |<--------------------+ - (frames de vídeo)   |
+                                            | - movement_control.py |                     +-----------------------+
+                                            +-----------------------+
