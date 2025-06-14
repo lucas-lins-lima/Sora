@@ -205,11 +205,11 @@ A interface do Sora deverá carregar, exibir o avatar e permitir que você inter
 
 # Mapa de Conexões de Arquivos
 Entender como os arquivos do projeto Sora se conectam é crucial para depuração e atualização. O main.py atua como o orquestrador central, instanciando e chamando os métodos dos outros módulos. As setas (→) indicam a direção da dependência ou do fluxo de informações.
-
+```
 +-------------------+                                                                +------------------+
 |   frontend/       |                                                                |   backend_api/   |
 |                   |                                                                |   api_server.py  |
-| - index.html      |<---------- HTTPS/WebSocket -----------------------------------|                  |
+| - index.html      |<---------- HTTPS/WebSocket ----------------------------------- |                  |
 | - style.css       |                                                                |------------------+
 | - script.js       |                                                                         | (global vars)
 |                   |                                                                         |
@@ -220,19 +220,19 @@ Entender como os arquivos do projeto Sora se conectam é crucial para depuraçã
                                                                                            +-------------+
                                                                                                   |
                                                       +---------------------------------------------+---------------------------------------------+
-                                                      |                                             |                                             |
-                                                      v                                             v                                             v
-+-----------------------+           +-----------------------+           +-----------------------+           +-----------------------+           +-----------------------+
-|  utils/               |           |  data/                |           |  vision_processing/   |           |  audio_processing/    |           |  nlp/                 |
-|                       |           |                       |           |                       |           |                       |           |                       |
-| - logger.py   <-------+-----------+ - user_profiles/      |           | - camera_handler.py   |<----------+ - microphone_handler.py |           | - sentiment_analysis.py |
-| - constants.py<-------------------+ - knowledge_base/     |           | - facial_recognition.py --+         |                       |           | - intent_recognition.py |
-+-----------------------+           | - collected_data/     |           | - body_pose_estimation.py--+       | - speech_recognition.py |<----------+                       |
-                                    |   - interaction_logs.py |           |                       |           | - audio_analysis.py   |           |                       |
-                                    |   - learning_data_manager.py|<-------+ emotion_analysis.py <--+-----------+-----------------------+           |                       |
-                                    +-----------------------+                                       |                                             |
-                                               ^                                                    |                                             |
-                                               | (dialogue_manager logs)                             |                                             v
+                                                      |                                           |                                               |
+                                                      v                                           v                                               v
++-----------------------+           +-----------------------------+           +-----------------------+           +-----------------------+           +-----------------------+
+|  utils/               |           |  data/                      |           |  vision_processing/   |           |  audio_processing/      |           |  nlp/                   |
+|                       |           |                             |           |                       |           |                         |           |                         |
+| - logger.py   <-------+-----------+ - user_profiles/            |           | - camera_handler.py   |<----------+ - microphone_handler.py |           | - sentiment_analysis.py |
+| - constants.py<-------------------+ - knowledge_base/           |           | - facial_recognition.py --+       |                         |           | - intent_recognition.py |
++-----------------------+           | - collected_data/           |           | - body_pose_estimation.py--+      | - speech_recognition.py |<----------+                         |
+                                    |   - interaction_logs.py     |           |                       |           | - audio_analysis.py     |           |                         |
+                                    |   - learning_data_manager.py|      <-------+ emotion_analysis.py <--+-----------+-----------------------+         |+-----------------------+|
+                                    +-----------------------------+                                       |                                             |
+                                               ^                                                     |                                                  |
+                                               | (dialogue_manager logs)                             |                                                  v
                                                |                                                     |                                   +-------------------+
                                                |                                                     |                                   |  dialogue_manager.py|
                                                |                                                     |                                   +-------------------+
@@ -251,9 +251,10 @@ Entender como os arquivos do projeto Sora se conectam é crucial para depuraçã
                                                       +----------------------------------------------+---------------------------------------------+
                                                       |                                              |
                                                       v                                              v
-                                            +-----------------------+                     +-----------------------+
+                                            +-----------------------+                     +---------------------------+
                                             |  action_execution/    |                     | video_animation_player.py |
-                                            |                       |                     |                       |
-                                            | - speech_synthesis.py |<--------------------+ - (frames de vídeo)   |
-                                            | - movement_control.py |                     +-----------------------+
+                                            |                       |                     |                           |
+                                            | - speech_synthesis.py |<--------------------+ - (frames de vídeo)       |
+                                            | - movement_control.py |                     +---------------------------+
                                             +-----------------------+
+```
