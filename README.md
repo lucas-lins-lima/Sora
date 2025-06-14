@@ -222,7 +222,7 @@ Entender como os arquivos do projeto Sora se conectam é crucial para depuraçã
                                                       +---------------------------------------------+---------------------------------------------+
                                                       |                                           |                                               |
                                                       v                                           v                                               v
-+-----------------------+           +-----------------------------+           +-----------------------+           +-----------------------+           +-----------------------+
++-----------------------+           +-----------------------------+           +-----------------------+           +-------------------------+           +-------------------------+
 |  utils/               |           |  data/                      |           |  vision_processing/   |           |  audio_processing/      |           |  nlp/                   |
 |                       |           |                             |           |                       |           |                         |           |                         |
 | - logger.py   <-------+-----------+ - user_profiles/            |           | - camera_handler.py   |<----------+ - microphone_handler.py |           | - sentiment_analysis.py |
@@ -230,12 +230,12 @@ Entender como os arquivos do projeto Sora se conectam é crucial para depuraçã
 +-----------------------+           | - collected_data/           |           | - body_pose_estimation.py--+      | - speech_recognition.py |<----------+                         |
                                     |   - interaction_logs.py     |           |                       |           | - audio_analysis.py     |           |                         |
                                     |   - learning_data_manager.py|      <-------+ emotion_analysis.py <--+-----------+-----------------------+         |+-----------------------+|
-                                    +-----------------------------+                                       |                                             |
+                                    +-----------------------------+                                  |                                                  |
                                                ^                                                     |                                                  |
                                                | (dialogue_manager logs)                             |                                                  v
-                                               |                                                     |                                   +-------------------+
+                                               |                                                     |                                   +---------------------+
                                                |                                                     |                                   |  dialogue_manager.py|
-                                               |                                                     |                                   +-------------------+
+                                               |                                                     |                                   +---------------------+
                                                |                                                     |                                             |
                                                +-----------------------------------------------------+---------------------------------------------+
                                                                                                      | (Context, Estado do Diálogo)
