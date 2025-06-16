@@ -1,0 +1,501 @@
+# =========================================================================
+# SORA ROBOT - DOCKER COMPOSE
+# Orquestração completa do sistema com todos os serviços necessários
+# =========================================================================
+
+version: '3.8'
+
+# =========================================================================
+# REDES - Definição de redes para comunicação entre serviços
+# =========================================================================
+
+networks:
+  sora-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    labels:
+      - "com.sora-robot.network=main"
+
+  monitoring-network:
+    driver: bridge
+    internal: true
+    labels:
+      - "com.sora-robot.network=monitoring"
+
+# =========================================================================
+# VOLUMES - Persistência de dados
+# =========================================================================
+
+volumes:
+  # Dados do PostgreSQL
+  postgres_data:
+    driver: local
+    labels:
+      - "com.sora-robot.volume=database"
+
+  # Cache do Redis
+  redis_data:
+    driver: local
+    labels:
+      - "com.sora-robot.volume=cache"
+
+  # Logs do sistema
+  sora_logs:
+    driver: local
+    labels:
+      - "com.sora-robot.volume=logs"
+
+  # Dados coletados
+  sora_data:
+    driver: local
+    labels:
+      - "com.sora-robot.volume=data"
+
+  # Cache de modelos ML
+  sora_models:
+    driver: local
+    labels:
+      - "com.sora-robot.volume=models"
+
+  # Dados do Prometheus
+  prometheus_data:
+    driver: local
+    labels:
+      - "com.sora-robot.volume=monitoring"
+
+  # Dados do Grafana
+  grafana_data:
+    driver: local
+    labels:
+      - "com.sora-robot.volume=dashboards"
+
+# =========================================================================
+# SERVIÇOS - Definição de todos os containers
+# =========================================================================
+
+services:
+
+  # =========================================================================
+  # BANCO DE DADOS - PostgreSQL para persistência
+  # =========================================================================
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: sora-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sora_robot
+      POSTGRES_USER: sora_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sora_secure_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - sora-network
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    labels:
+      - "com.sora-robot.service=database"
+      - "com.sora-robot.description=PostgreSQL database for Sora Robot"
+
+  # =========================================================================
+  # CACHE - Redis para cache e sessões
+  # =========================================================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: sora-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-sora_redis_password}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-sora_redis_password}
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - sora-network
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    labels:
+      - "com.sora-robot.service=cache"
+      - "com.sora-robot.description=Redis cache for Sora Robot"
+
+  # =========================================================================
+  # APLICAÇÃO PRINCIPAL - Sora Robot
+  # =========================================================================
+
+  sora-robot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+      args:
+        - SORA_VERSION=${SORA_VERSION:-1.0.0}
+    image: sora-robot:${SORA_VERSION:-latest}
+    container_name: sora-robot-main
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Configurações do Sora
+      SORA_ENVIRONMENT: ${SORA_ENVIRONMENT:-production}
+      SORA_HOST: 0.0.0.0
+      SORA_PORT: 8000
+      SORA_WORKERS: ${SORA_WORKERS:-2}
+      SORA_LOG_LEVEL: ${SORA_LOG_LEVEL:-INFO}
+
+      # APIs de IA
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      # APIs de Speech
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-eastus}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+
+      # Configurações de banco
+      DATABASE_URL: postgresql://sora_user:${POSTGRES_PASSWORD:-sora_secure_password}@postgres:5432/sora_robot
+      REDIS_URL: redis://:${REDIS_PASSWORD:-sora_redis_password}@redis:6379/0
+
+      # Configurações de segurança
+      SORA_ENCRYPTION_KEY: ${SORA_ENCRYPTION_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+
+      # Configurações de performance
+      OMP_NUM_THREADS: 1
+      NUMEXPR_MAX_THREADS: 1
+      TORCH_HOME: /app/cache/torch
+      TRANSFORMERS_CACHE: /app/cache/transformers
+
+    volumes:
+      - sora_logs:/app/logs
+      - sora_data:/app/data
+      - sora_models:/app/cache
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw  # Para suporte a GUI
+    networks:
+      - sora-network
+    ports:
+      - "${SORA_PORT:-8000}:8000"
+      - "${SORA_WS_PORT:-8001}:8001"  # WebSocket
+    devices:
+      - /dev/snd:/dev/snd  # Acesso ao áudio
+    privileged: false
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    labels:
+      - "com.sora-robot.service=main"
+      - "com.sora-robot.description=Sora Robot main application"
+      - "traefik.enable=true"
+      - "traefik.http.routers.sora.rule=Host(`${SORA_DOMAIN:-localhost}`)"
+
+  # =========================================================================
+  # LOAD BALANCER - Nginx para proxy reverso
+  # =========================================================================
+
+  nginx:
+    image: nginx:alpine
+    container_name: sora-nginx
+    restart: unless-stopped
+    depends_on:
+      - sora-robot
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./frontend:/usr/share/nginx/html:ro
+      - sora_logs:/var/log/nginx
+    networks:
+      - sora-network
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    labels:
+      - "com.sora-robot.service=proxy"
+      - "com.sora-robot.description=Nginx reverse proxy"
+
+  # =========================================================================
+  # MONITORAMENTO - Prometheus (perfil prod)
+  # =========================================================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sora-prometheus
+    restart: unless-stopped
+    profiles:
+      - monitoring
+      - production
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - sora-network
+      - monitoring-network
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    labels:
+      - "com.sora-robot.service=monitoring"
+
+  # =========================================================================
+  # DASHBOARDS - Grafana (perfil prod)
+  # =========================================================================
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sora-grafana
+    restart: unless-stopped
+    profiles:
+      - monitoring
+      - production
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - monitoring-network
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "com.sora-robot.service=dashboard"
+
+  # =========================================================================
+  # WORKER ADICIONAL - Para processamento pesado (perfil scale)
+  # =========================================================================
+
+  sora-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+    image: sora-robot:${SORA_VERSION:-latest}
+    restart: unless-stopped
+    profiles:
+      - scale
+      - production
+    command: ["python", "main.py", "--mode", "worker", "--worker-id", "1"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SORA_ENVIRONMENT: ${SORA_ENVIRONMENT:-production}
+      SORA_WORKER_MODE: true
+      DATABASE_URL: postgresql://sora_user:${POSTGRES_PASSWORD:-sora_secure_password}@postgres:5432/sora_robot
+      REDIS_URL: redis://:${REDIS_PASSWORD:-sora_redis_password}@redis:6379/0
+    volumes:
+      - sora_logs:/app/logs
+      - sora_models:/app/cache
+    networks:
+      - sora-network
+    deploy:
+      replicas: ${WORKER_REPLICAS:-1}
+      resources:
+        limits:
+          memory: 3G
+          cpus: '1.5'
+    labels:
+      - "com.sora-robot.service=worker"
+
+# =========================================================================
+# CONFIGURAÇÕES ADICIONAIS
+# =========================================================================
+
+# Arquivo .env para variáveis de ambiente:
+# SORA_ENVIRONMENT=production
+# SORA_VERSION=1.0.0
+# POSTGRES_PASSWORD=secure_password_here
+# REDIS_PASSWORD=redis_password_here
+# OPENAI_API_KEY=sk-your-key
+# GOOGLE_AI_API_KEY=your-key
+# SORA_ENCRYPTION_KEY=your-encryption-key
+# JWT_SECRET_KEY=your-jwt-secret
+# SORA_DOMAIN=sora-robot.yourdomain.com
+# HTTP_PORT=80
+# HTTPS_PORT=443
+
+# =========================================================================
+# COMANDOS DE USO
+# =========================================================================
+
+# Iniciar ambiente completo:
+# docker-compose up -d
+
+# Iniciar apenas serviços básicos:
+# docker-compose up -d postgres redis sora-robot nginx
+
+# Iniciar com monitoramento:
+# docker-compose --profile monitoring up -d
+
+# Iniciar ambiente de produção:
+# docker-compose --profile production up -d
+
+# Escalar workers:
+# docker-compose --profile scale up -d
+# docker-compose up -d --scale sora-worker=3
+
+# Ver logs:
+# docker-compose logs -f sora-robot
+# docker-compose logs -f
+
+# Parar tudo:
+# docker-compose down
+
+# Parar e remover volumes (CUIDADO!):
+# docker-compose down -v
+
+# Rebuild e restart:
+# docker-compose up -d --build
+
+# Executar comandos no container:
+# docker-compose exec sora-robot bash
+# docker-compose exec sora-robot python main.py --check-status
+
+# Backup do banco:
+# docker-compose exec postgres pg_dump -U sora_user sora_robot > backup.sql
+
+# Restore do banco:
+# docker-compose exec -T postgres psql -U sora_user sora_robot < backup.sql
+
+# =========================================================================
+# PERFIS DE DEPLOYMENT
+# =========================================================================
+
+# Desenvolvimento (básico):
+# docker-compose up -d postgres redis sora-robot
+
+# Produção (completo com monitoramento):
+# docker-compose --profile production up -d
+
+# Scale (alta disponibilidade):
+# docker-compose --profile scale --profile production up -d
+
+# Apenas monitoramento:
+# docker-compose --profile monitoring up -d prometheus grafana
+
+# =========================================================================
+# TROUBLESHOOTING
+# =========================================================================
+
+# Se serviços não iniciam:
+# docker-compose ps
+# docker-compose logs service-name
+
+# Se problema de permissões:
+# docker-compose exec sora-robot chown -R sora:sora /app
+
+# Se problema de conectividade:
+# docker-compose exec sora-robot ping postgres
+# docker-compose exec sora-robot nc -zv redis 6379
+
+# Se problema de memória:
+# Ajustar recursos em deploy.resources
+
+# Reset completo:
+# docker-compose down -v --remove-orphans
+# docker system prune -a
+# docker-compose up -d --build
+
+# =========================================================================
+# CONFIGURAÇÕES DE PRODUÇÃO
+# =========================================================================
+
+# Para produção, considere:
+# 1. Usar secrets do Docker Swarm ou Kubernetes
+# 2. Configurar backup automático dos volumes
+# 3. Usar load balancer externo (AWS ALB, Cloudflare)
+# 4. Configurar monitoramento de logs (ELK Stack)
+# 5. Implementar CI/CD pipeline
+# 6. Configurar SSL/TLS certificates
+# 7. Usar registry privado para imagens
+# 8. Configurar alertas no Grafana/Prometheus

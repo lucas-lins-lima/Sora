@@ -1,0 +1,434 @@
+# =========================================================================
+# SORA ROBOT - PROMETHEUS CONFIGURATION
+# Configuração de monitoramento e coleta de métricas para todo o sistema
+# =========================================================================
+
+# =========================================================================
+# CONFIGURAÇÕES GLOBAIS
+# =========================================================================
+
+global:
+  # Intervalo padrão de coleta de métricas
+  scrape_interval: 15s
+  
+  # Timeout para coleta
+  scrape_timeout: 10s
+  
+  # Intervalo de avaliação de regras
+  evaluation_interval: 15s
+  
+  # Labels externos aplicados a todas as métricas
+  external_labels:
+    cluster: 'sora-robot'
+    environment: 'production'
+    datacenter: 'local'
+
+# =========================================================================
+# REGRAS DE ALERTAS
+# =========================================================================
+
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+  - "/etc/prometheus/alerts/*.yml"
+
+# =========================================================================
+# CONFIGURAÇÃO DE ALERTMANAGER (OPCIONAL)
+# =========================================================================
+
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# =========================================================================
+# CONFIGURAÇÕES DE SCRAPING
+# =========================================================================
+
+scrape_configs:
+
+  # =========================================================================
+  # PROMETHEUS SELF-MONITORING
+  # =========================================================================
+  
+  - job_name: 'prometheus'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_timeout: 5s
+
+  # =========================================================================
+  # SORA ROBOT - APLICAÇÃO PRINCIPAL
+  # =========================================================================
+  
+  - job_name: 'sora-robot'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    
+    static_configs:
+      - targets: 
+          - 'sora-robot:8000'
+          # - 'sora-robot-2:8000'  # Para múltiplas instâncias
+          # - 'sora-robot-3:8000'
+    
+    # Labels adicionais
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__address__]
+        regex: '([^:]+):(.*)'
+        target_label: __address__
+        replacement: '${1}:8000'
+      - target_label: service
+        replacement: 'sora-robot'
+      - target_label: component
+        replacement: 'api'
+    
+    # Configurações de métricas específicas
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'sora_(.+)'
+        target_label: __name__
+        replacement: 'sora_${1}'
+
+  # =========================================================================
+  # SORA ROBOT - WORKERS
+  # =========================================================================
+  
+  - job_name: 'sora-workers'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    
+    static_configs:
+      - targets: []  # Será populado dinamicamente pelos workers
+    
+    relabel_configs:
+      - target_label: service
+        replacement: 'sora-robot'
+      - target_label: component
+        replacement: 'worker'
+
+  # =========================================================================
+  # NGINX - PROXY REVERSO
+  # =========================================================================
+  
+  - job_name: 'nginx'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /nginx_status
+    scheme: http
+    
+    static_configs:
+      - targets: ['nginx:80']
+    
+    relabel_configs:
+      - target_label: service
+        replacement: 'nginx'
+      - target_label: component
+        replacement: 'proxy'
+    
+    # Converter status do Nginx para métricas Prometheus
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'nginx_(.+)'
+        target_label: __name__
+        replacement: 'nginx_${1}'
+
+  # =========================================================================
+  # POSTGRESQL - BANCO DE DADOS
+  # =========================================================================
+  
+  - job_name: 'postgresql'
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    
+    relabel_configs:
+      - target_label: service
+        replacement: 'postgresql'
+      - target_label: component
+        replacement: 'database'
+    
+    # Configuração para postgres_exporter
+    params:
+      collect[]:
+        - 'pg_stat_database'
+        - 'pg_stat_user_tables'
+        - 'pg_stat_activity'
+        - 'pg_locks'
+
+  # =========================================================================
+  # REDIS - CACHE
+  # =========================================================================
+  
+  - job_name: 'redis'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    
+    relabel_configs:
+      - target_label: service
+        replacement: 'redis'
+      - target_label: component
+        replacement: 'cache'
+
+  # =========================================================================
+  # NODE EXPORTER - MÉTRICAS DO SISTEMA
+  # =========================================================================
+  
+  - job_name: 'node-exporter'
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    
+    static_configs:
+      - targets: ['node-exporter:9100']
+    
+    relabel_configs:
+      - target_label: service
+        replacement: 'system'
+      - target_label: component
+        replacement: 'node'
+    
+    # Coletar apenas métricas essenciais para reduzir carga
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'node_(cpu|memory|disk|network|filesystem|load).*'
+        action: keep
+
+  # =========================================================================
+  # DOCKER METRICS - CONTAINERS
+  # =========================================================================
+  
+  - job_name: 'docker'
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    
+    static_configs:
+      - targets: ['cadvisor:8080']
+    
+    relabel_configs:
+      - target_label: service
+        replacement: 'docker'
+      - target_label: component
+        replacement: 'containers'
+    
+    # Filtrar apenas containers do Sora Robot
+    metric_relabel_configs:
+      - source_labels: [container_label_com_sora_robot_service]
+        regex: '(.+)'
+        target_label: sora_service
+        replacement: '${1}'
+      - source_labels: [container_label_com_sora_robot_service]
+        regex: '^$'
+        action: drop
+
+  # =========================================================================
+  # BLACKBOX EXPORTER - HEALTH CHECKS
+  # =========================================================================
+  
+  - job_name: 'blackbox-http'
+    scrape_interval: 60s
+    scrape_timeout: 30s
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    
+    static_configs:
+      - targets:
+          - 'http://sora-robot:8000/health'
+          - 'http://sora-robot:8000/status'
+          - 'http://nginx:80/health'
+          - 'http://grafana:3000/api/health'
+    
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'blackbox-exporter:9115'
+      - target_label: service
+        replacement: 'health-check'
+
+  # =========================================================================
+  # CUSTOM METRICS - MÉTRICAS ESPECÍFICAS DO SORA
+  # =========================================================================
+  
+  - job_name: 'sora-custom-metrics'
+    scrape_interval: 10s  # Mais frequente para métricas de IA
+    scrape_timeout: 8s
+    metrics_path: /api/internal/metrics
+    scheme: http
+    
+    static_configs:
+      - targets: ['sora-robot:8000']
+    
+    relabel_configs:
+      - target_label: service
+        replacement: 'sora-robot'
+      - target_label: component
+        replacement: 'ai-metrics'
+    
+    # Headers de autenticação para métricas internas
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/sora-metrics-token
+
+# =========================================================================
+# CONFIGURAÇÕES DE STORAGE
+# =========================================================================
+
+# Configurações de retenção de dados
+storage:
+  tsdb:
+    # Retenção de dados (padrão: 15 dias)
+    retention.time: 30d
+    
+    # Tamanho máximo do banco
+    retention.size: 10GB
+    
+    # Configurações de compactação
+    min-block-duration: 2h
+    max-block-duration: 25h
+    
+    # Configurações de WAL
+    wal-compression: true
+
+# =========================================================================
+# CONFIGURAÇÕES DE DESCOBERTA DE SERVIÇOS
+# =========================================================================
+
+# Descoberta automática via Docker
+# - job_name: 'docker-discovery'
+#   docker_sd_configs:
+#     - host: unix:///var/run/docker.sock
+#       refresh_interval: 30s
+#   
+#   relabel_configs:
+#     - source_labels: [__meta_docker_container_label_com_sora_robot_service]
+#       regex: '(.+)'
+#       target_label: service
+#       replacement: '${1}'
+#     - source_labels: [__meta_docker_container_label_com_sora_robot_service]
+#       regex: '^$'
+#       action: drop
+
+# =========================================================================
+# MÉTRICAS ESPECÍFICAS DO SORA ROBOT
+# =========================================================================
+
+# O sistema Sora Robot expõe as seguintes métricas customizadas:
+#
+# MÉTRICAS DE PERFORMANCE:
+# - sora_response_time_seconds: Tempo de resposta das interações
+# - sora_processing_duration_seconds: Duração do processamento por módulo
+# - sora_queue_size: Tamanho das filas de processamento
+# - sora_active_connections: Conexões WebSocket ativas
+#
+# MÉTRICAS DE IA:
+# - sora_emotion_detection_confidence: Confiança na detecção de emoções
+# - sora_intent_recognition_accuracy: Precisão do reconhecimento de intenção
+# - sora_sentiment_score: Score de sentimento (-1 a 1)
+# - sora_llm_token_usage: Uso de tokens dos LLMs
+#
+# MÉTRICAS DE SISTEMA:
+# - sora_cpu_usage_percent: Uso de CPU por módulo
+# - sora_memory_usage_bytes: Uso de memória por módulo
+# - sora_gpu_utilization_percent: Utilização da GPU (se disponível)
+# - sora_disk_io_bytes: I/O de disco
+#
+# MÉTRICAS DE NEGÓCIO:
+# - sora_total_interactions: Total de interações processadas
+# - sora_user_satisfaction_score: Score de satisfação do usuário
+# - sora_error_rate: Taxa de erro por módulo
+# - sora_availability_percent: Disponibilidade do sistema
+
+# =========================================================================
+# EXEMPLOS DE QUERIES ÚTEIS
+# =========================================================================
+
+# PERFORMANCE:
+# - Tempo médio de resposta: avg(sora_response_time_seconds)
+# - P95 de resposta: histogram_quantile(0.95, sora_response_time_seconds_bucket)
+# - Taxa de requisições: rate(sora_total_interactions[5m])
+#
+# RECURSOS:
+# - CPU total: sum(rate(node_cpu_seconds_total[5m])) by (mode)
+# - Memória livre: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+# - Disk usage: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes
+#
+# AI METRICS:
+# - Confiança média de emoções: avg(sora_emotion_detection_confidence)
+# - Distribuição de sentimentos: sum(rate(sora_sentiment_score[5m])) by (sentiment_label)
+# - Tokens LLM por minuto: rate(sora_llm_token_usage[1m])
+#
+# SAÚDE DO SISTEMA:
+# - Services up: up{job=~"sora.*"}
+# - Error rate: sum(rate(sora_errors_total[5m])) / sum(rate(sora_total_interactions[5m]))
+# - Disponibilidade: avg_over_time(up{job="sora-robot"}[24h])
+
+# =========================================================================
+# CONFIGURAÇÕES DE DEBUGGING
+# =========================================================================
+
+# Para debug, habilitar logs mais detalhados:
+# global:
+#   external_labels:
+#     debug: 'true'
+#
+# E adicionar scrape config para debug:
+# - job_name: 'sora-debug'
+#   scrape_interval: 5s
+#   metrics_path: /debug/metrics
+#   static_configs:
+#     - targets: ['sora-robot:8000']
+
+# =========================================================================
+# INTEGRAÇÃO COM GRAFANA
+# =========================================================================
+
+# Este arquivo funciona em conjunto com:
+# 1. Grafana dashboards em /monitoring/grafana/dashboards/
+# 2. Datasource configurado em /monitoring/grafana/datasources/
+# 3. Alerting rules em /monitoring/prometheus/rules/
+# 4. Alert manager (opcional) para notificações
+
+# Para acessar métricas no Grafana:
+# 1. Prometheus datasource: http://prometheus:9090
+# 2. Importar dashboards pré-configurados
+# 3. Configurar alertas baseados nas métricas coletadas
+
+# =========================================================================
+# NOTAS DE PRODUÇÃO
+# =========================================================================
+
+# PERFORMANCE:
+# - Ajustar scrape_interval baseado na carga
+# - Usar service discovery para ambientes dinâmicos
+# - Configurar federation para múltiplos clusters
+#
+# SEGURANÇA:
+# - Usar TLS para comunicação entre componentes
+# - Implementar autenticação para métricas sensíveis
+# - Restringir acesso aos endpoints de métricas
+#
+# ESCALABILIDADE:
+# - Configurar sharding para grandes volumes
+# - Usar remote storage para retenção longa
+# - Implementar high availability com múltiplas instâncias
+#
+# MANUTENÇÃO:
+# - Monitorar uso de disco do TSDB
+# - Configurar backup automático dos dados
+# - Implementar rotação de logs

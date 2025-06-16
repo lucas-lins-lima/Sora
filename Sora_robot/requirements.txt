@@ -1,0 +1,430 @@
+# =========================================================================
+# SORA ROBOT - DEPENDÊNCIAS PYTHON
+# Lista completa de bibliotecas necessárias para o sistema funcionar
+# Instalação: pip install -r requirements.txt
+# =========================================================================
+
+# =========================================================================
+# FRAMEWORKS WEB E API
+# =========================================================================
+
+# FastAPI - Framework web moderno para APIs
+fastapi==0.104.1
+
+# Uvicorn - Servidor ASGI para FastAPI
+uvicorn[standard]==0.24.0
+
+# WebSockets - Comunicação em tempo real
+websockets==12.0
+
+# Pydantic - Validação de dados e serialização
+pydantic==2.5.0
+
+# Starlette - Framework base do FastAPI
+starlette==0.27.0
+
+# =========================================================================
+# PROCESSAMENTO DE VISÃO
+# =========================================================================
+
+# OpenCV - Processamento de imagem e vídeo
+opencv-python==4.8.1.78
+
+# MediaPipe - Detecção de poses e faces (Google)
+mediapipe==0.10.8
+
+# Face Recognition - Reconhecimento facial
+face-recognition==1.3.0
+
+# dlib - Biblioteca de machine learning (dependência do face-recognition)
+dlib==19.24.2
+
+# Pillow - Manipulação de imagens
+Pillow==10.1.0
+
+# scikit-image - Processamento avançado de imagens
+scikit-image==0.22.0
+
+# =========================================================================
+# PROCESSAMENTO DE ÁUDIO
+# =========================================================================
+
+# PyAudio - Captura e reprodução de áudio
+PyAudio==0.2.13
+
+# SpeechRecognition - Reconhecimento de fala
+SpeechRecognition==3.10.0
+
+# OpenAI Whisper - Reconhecimento de fala avançado
+openai-whisper==20231117
+
+# pydub - Manipulação de arquivos de áudio
+pydub==0.25.1
+
+# librosa - Análise de áudio
+librosa==0.10.1
+
+# soundfile - Leitura/escrita de arquivos de áudio
+soundfile==0.12.1
+
+# webrtcvad - Voice Activity Detection
+webrtcvad==2.0.10
+
+# =========================================================================
+# PROCESSAMENTO DE LINGUAGEM NATURAL (NLP)
+# =========================================================================
+
+# Transformers - Modelos de linguagem da Hugging Face
+transformers==4.36.0
+
+# PyTorch - Framework de deep learning
+torch==2.1.1
+torchaudio==2.1.1
+
+# TextBlob - Análise de sentimento simples
+textblob==0.17.1
+
+# spaCy - Processamento avançado de linguagem natural
+spacy==3.7.2
+
+# NLTK - Natural Language Toolkit
+nltk==3.8.1
+
+# scikit-learn - Machine learning
+scikit-learn==1.3.2
+
+# =========================================================================
+# INTEGRAÇÃO COM LLMS E APIS EXTERNAS
+# =========================================================================
+
+# OpenAI - GPT e outros modelos
+openai==1.3.7
+
+# Google Cloud AI Platform
+google-cloud-aiplatform==1.38.1
+google-cloud-speech==2.21.0
+google-cloud-texttospeech==2.16.3
+
+# Anthropic Claude
+anthropic==0.7.7
+
+# Azure Cognitive Services
+azure-cognitiveservices-speech==1.34.0
+
+# AWS SDK
+boto3==1.34.0
+botocore==1.34.0
+
+# ElevenLabs TTS
+elevenlabs==0.2.26
+
+# Deepgram SDK
+deepgram-sdk==3.2.3
+
+# AssemblyAI
+assemblyai==0.17.0
+
+# =========================================================================
+# BIBLIOTECAS DE DADOS E COMPUTAÇÃO
+# =========================================================================
+
+# NumPy - Computação numérica
+numpy==1.25.2
+
+# Pandas - Manipulação de dados
+pandas==2.1.4
+
+# Matplotlib - Visualização de dados
+matplotlib==3.8.2
+
+# Seaborn - Visualização estatística
+seaborn==0.13.0
+
+# SciPy - Computação científica
+scipy==1.11.4
+
+# =========================================================================
+# NETWORKING E COMUNICAÇÃO
+# =========================================================================
+
+# Requests - HTTP client
+requests==2.31.0
+
+# aiohttp - HTTP client assíncrono
+aiohttp==3.9.1
+
+# httpx - HTTP client moderno
+httpx==0.25.2
+
+# =========================================================================
+# CONFIGURAÇÃO E AMBIENTE
+# =========================================================================
+
+# python-dotenv - Carregamento de variáveis de ambiente
+python-dotenv==1.0.0
+
+# PyYAML - Parsing de arquivos YAML
+PyYAML==6.0.1
+
+# configparser - Parsing de arquivos de configuração
+configparser==6.0.0
+
+# =========================================================================
+# SISTEMA E MONITORAMENTO
+# =========================================================================
+
+# psutil - Informações do sistema
+psutil==5.9.6
+
+# GPUtil - Monitoramento de GPU
+GPUtil==1.4.0
+
+# py-cpuinfo - Informações da CPU
+py-cpuinfo==9.0.0
+
+# =========================================================================
+# THREADING E CONCORRÊNCIA
+# =========================================================================
+
+# asyncio - Programação assíncrona (built-in, mas pode precisar de backports)
+# concurrent.futures - Built-in
+
+# multiprocessing-logging - Logging thread-safe
+multiprocessing-logging==0.3.4
+
+# =========================================================================
+# CACHE E PERSISTÊNCIA
+# =========================================================================
+
+# Redis - Cache in-memory
+redis==5.0.1
+
+# SQLAlchemy - ORM de banco de dados
+SQLAlchemy==2.0.23
+
+# sqlite3 - Built-in
+
+# =========================================================================
+# SERIALIZAÇÃO E ENCODING
+# =========================================================================
+
+# pickle - Built-in
+# json - Built-in
+# base64 - Built-in
+
+# msgpack - Serialização binária eficiente
+msgpack==1.0.7
+
+# =========================================================================
+# VALIDAÇÃO E PARSING
+# =========================================================================
+
+# email-validator - Validação de emails
+email-validator==2.1.0
+
+# phonenumbers - Validação de números de telefone
+phonenumbers==8.13.26
+
+# validators - Validações diversas
+validators==0.22.0
+
+# =========================================================================
+# DESENVOLVIMENTO E DEBUG
+# =========================================================================
+
+# IPython - Shell interativo avançado
+ipython==8.17.2
+
+# Jupyter - Notebooks para desenvolvimento
+jupyter==1.0.0
+
+# pytest - Framework de testes
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# black - Formatação de código
+black==23.11.0
+
+# flake8 - Linting
+flake8==6.1.0
+
+# mypy - Type checking
+mypy==1.7.1
+
+# =========================================================================
+# LOGGING E MONITORAMENTO AVANÇADO
+# =========================================================================
+
+# loguru - Logging avançado (alternativa)
+loguru==0.7.2
+
+# structlog - Logging estruturado
+structlog==23.2.0
+
+# =========================================================================
+# UTILS E HELPERS
+# =========================================================================
+
+# pathlib - Built-in (Python 3.4+)
+# datetime - Built-in
+# time - Built-in
+# threading - Built-in
+# queue - Built-in
+
+# tqdm - Barras de progresso
+tqdm==4.66.1
+
+# click - CLI interfaces
+click==8.1.7
+
+# rich - Output colorido e formatado
+rich==13.7.0
+
+# =========================================================================
+# SEGURANÇA E AUTENTICAÇÃO
+# =========================================================================
+
+# cryptography - Criptografia
+cryptography==41.0.7
+
+# PyJWT - JSON Web Tokens
+PyJWT==2.8.0
+
+# passlib - Hashing de senhas
+passlib[bcrypt]==1.7.4
+
+# =========================================================================
+# DEPENDÊNCIAS ESPECÍFICAS POR PLATAFORMA
+# =========================================================================
+
+# Para Windows - pywin32 (apenas se necessário)
+pywin32==306; sys_platform == "win32"
+
+# Para macOS - pyobjc (apenas se necessário)
+# pyobjc-core==10.0; sys_platform == "darwin"
+
+# Para Linux - dependências específicas já cobertas
+
+# =========================================================================
+# DEPENDÊNCIAS OPCIONAIS PARA FUNCIONALIDADES AVANÇADAS
+# =========================================================================
+
+# TensorFlow - Alternative para PyTorch (comentado por padrão)
+tensorflow==2.15.0
+
+# OpenCV contrib - Módulos adicionais do OpenCV
+opencv-contrib-python==4.8.1.78
+
+# Dask - Computação paralela
+dask==2023.11.0
+
+# Celery - Task queue
+celery==5.3.4
+
+# =========================================================================
+# DEPENDÊNCIAS DE PRODUÇÃO
+# =========================================================================
+
+# gunicorn - Servidor WSGI para produção
+gunicorn==21.2.0
+
+# supervisor - Gerenciamento de processos
+supervisor==4.2.5
+
+# =========================================================================
+# DEPENDÊNCIAS DE DEPLOYMENT
+# =========================================================================
+
+# Docker - Será usado externamente
+# docker-compose - Será usado externamente
+
+# =========================================================================
+# NOTAS IMPORTANTES
+# =========================================================================
+
+# 1. Algumas dependências podem requerer instalação de bibliotecas do sistema:
+#    - Ubuntu/Debian: sudo apt-get install python3-dev libportaudio2 ffmpeg cmake
+#    - CentOS/RHEL: sudo yum install python3-devel portaudio-devel ffmpeg cmake
+#    - macOS: brew install portaudio ffmpeg cmake
+#    - Windows: Instalar Visual Studio Build Tools
+
+# 2. Para GPUs NVIDIA, instalar CUDA toolkit separadamente:
+#    - https://developer.nvidia.com/cuda-downloads
+
+# 3. Para Apple Silicon (M1/M2), algumas dependências podem precisar de versões específicas
+
+# 4. Dependências de compilação podem ser necessárias:
+#    - gcc/g++ para compilar extensões C/C++
+#    - cmake para dlib e outras bibliotecas
+
+# 5. Para reduzir tamanho em produção, considere instalar apenas dependências necessárias:
+#    - requirements-minimal.txt para deployment básico
+#    - requirements-dev.txt para desenvolvimento
+
+# =========================================================================
+# COMANDOS DE INSTALAÇÃO RECOMENDADOS
+# =========================================================================
+
+# 1. Criar ambiente virtual:
+#    python -m venv venv
+#    source venv/bin/activate  # Linux/macOS
+#    venv\Scripts\activate     # Windows
+
+# 2. Atualizar pip:
+#    pip install --upgrade pip
+
+# 3. Instalar dependências:
+#    pip install -r requirements.txt
+
+# 4. Para desenvolvimento:
+#    pip install -r requirements.txt
+#    pip install -e .
+
+# =========================================================================
+# VERIFICAÇÃO DE INSTALAÇÃO
+# =========================================================================
+
+# Para verificar se todas as dependências foram instaladas corretamente:
+#    python -c "import cv2, torch, transformers, fastapi; print('Dependências principais OK')"
+
+# =========================================================================
+# RESOLUÇÃO DE PROBLEMAS COMUNS
+# =========================================================================
+
+# 1. Erro com PyAudio:
+#    - Linux: sudo apt-get install portaudio19-dev
+#    - macOS: brew install portaudio
+#    - Windows: pip install pipwin && pipwin install pyaudio
+
+# 2. Erro com dlib:
+#    - Instalar cmake: sudo apt-get install cmake (Linux)
+#    - macOS: brew install cmake
+#    - Windows: Instalar Visual Studio Build Tools
+
+# 3. Erro com torch/CUDA:
+#    - Verificar compatibilidade CUDA
+#    - Instalar versão CPU: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+# 4. Erro de memória durante instalação:
+#    - pip install --no-cache-dir -r requirements.txt
+
+# =========================================================================
+# ALTERNATIVAS PARA AMBIENTES RESTRITIVOS
+# =========================================================================
+
+# Se algumas dependências não puderem ser instaladas:
+# 1. Comentar dependências problemáticas
+# 2. O sistema irá detectar e usar fallbacks
+# 3. Funcionalidades afetadas serão desabilitadas automaticamente
+
+# =========================================================================
+# LICENÇAS
+# =========================================================================
+
+# Todas as dependências listadas são compatíveis com uso comercial
+# Verificar licenças individuais se necessário:
+# - MIT: Maioria das bibliotecas
+# - Apache 2.0: TensorFlow, transformers
+# - BSD: OpenCV, scikit-learn
+# - GPL: Algumas dependências opcionais
