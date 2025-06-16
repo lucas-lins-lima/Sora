@@ -10,63 +10,109 @@ O robô Sora será capaz de:
 * **Aprender e Persistir Dados:** Coletar e armazenar logs detalhados de interações para análise e potencial retreinamento de modelos, permitindo que a Sora melhore suas respostas ao longo do tempo.
 * **Interface Imersiva:** Oferecer uma interface de usuário (front-end web) para uma experiência de interação mais imersiva, com streaming de vídeo do avatar e chat em tempo real.
 
-# Estrutura de Pastas e Arquivos
+# 🗂️ Estrutura de Pastas e Arquivos
 A arquitetura do Sora é modular, visando facilitar o desenvolvimento, a manutenção e a escalabilidade. Cada módulo tem uma responsabilidade bem definida, o que permite que atualizações em uma parte do sistema minimizem o impacto em outras.
+
+**📁 RAIZ DO PROJETO**
 ```
-sora_robot/                                 # Diretório raiz do projeto Sora. Contém toda a lógica e dados do robô.
-├── main.py                                 # Ponto de entrada principal do robô. Orquestra a execução de todos os módulos.
-├── config.py                               # Armazena configurações globais, chaves de API e caminhos de arquivos.
-├── utils/                                  # Utilitários e funções de suporte que podem ser usadas em múltiplos módulos.
-│   ├── __init__.py                         # Torna 'utils' um pacote Python.
-│   └── logger.py                           # Módulo para configuração e gestão centralizada de logs.
-│   └── constants.py                        # Definições de constantes (emoções, intenções, limiares, etc.) usadas globalmente.
-├── data/                                   # Armazena dados persistentes e coletados pelo robô.
-│   ├── user_profiles/                      # Gerencia perfis de usuários com quem o Sora interage.
-│   │   ├── __init__.py                     # Torna 'user_profiles' um pacote Python.
-│   │   └── profiles.json                   # Arquivo JSON para armazenar dados estruturados de perfis de usuário (ex: histórico de interações, preferências).
-│   ├── knowledge_base/                     # Contém a base de conhecimento estática sobre o evento ou outros tópicos.
-│   │   ├── __init__.py                     # Torna 'knowledge_base' um pacote Python.
-│   │   └── event_info.json                 # Arquivo JSON com informações pré-definidas sobre o evento (agenda, locais, etc.).
-│   └── collected_data/                     # Destinado a armazenar dados brutos e processados coletados em tempo real para análise e aprendizado.
-│       ├── __init__.py                     # Torna 'collected_data' um pacote Python.
-│       ├── interaction_logs.py             # Módulo para registrar logs detalhados de cada interação do Sora.
-│       ├── learning_data_manager.py        # Módulo para gerenciar dados formatados especificamente para treinamento de modelos de ML.
-│       └── raw_sensor_logs/                # Opcional: Para logs brutos (vídeo/áudio) dos sensores, se a persistência for necessária.
-│           └── __init__.py                 # Torna 'raw_sensor_logs' um pacote Python.
-├── vision_processing/                      # Módulo dedicado ao processamento de dados visuais (câmera).
-│   ├── __init__.py                         # Torna 'vision_processing' um pacote Python.
-│   ├── camera_handler.py                   # Gerencia a captura de frames da câmera.
-│   ├── facial_recognition.py               # Lida com a detecção e, opcionalmente, o reconhecimento facial.
-│   ├── emotion_analysis.py                 # Analisa emoções a partir de dados faciais e corporais.
-│   └── body_pose_estimation.py             # Estima a pose corporal (esqueleto) para identificar gestos e postura.
-├── audio_processing/                       # Módulo dedicado ao processamento de dados de áudio (microfone).
-│   ├── __init__.py                         # Torna 'audio_processing' um pacote Python.
-│   ├── microphone_handler.py               # Gerencia a captura de dados de áudio do microfone.
-│   ├── speech_recognition.py               # Converte fala em texto (Automatic Speech Recognition - ASR).
-│   └── audio_analysis.py                   # Analisa características do áudio para identificar emoções e intenções vocais.
-├── nlp/                                    # Módulo para Processamento de Linguagem Natural (NLP).
-│   ├── __init__.py                         # Torna 'nlp' um pacote Python.
-│   ├── sentiment_analysis.py               # Analisa o sentimento (positivo, negativo, neutro) do texto.
-│   ├── intent_recognition.py               # Identifica a intenção principal da fala do usuário.
-│   └── dialogue_manager.py                 # Gerencia o fluxo da conversa, contexto e histórico do diálogo.
-├── response_generation/                    # Módulo responsável por gerar as respostas e animações do Sora.
-│   ├── __init__.py                         # Torna 'response_generation' um pacote Python.
-│   ├── llm_integration.py                  # Integração com Large Language Models (LLMs) para geração de texto dinâmico.
-│   ├── avatar_animation.py                 # Controlador de alto nível para as animações do avatar 3D (expressões faciais, gestos).
-│   └── video_animation_player.py           # Gerencia a reprodução de arquivos de vídeo MP4 para animação fluida do avatar.
-├── action_execution/                       # Módulo para a execução de ações físicas e verbais do robô.
-│   ├── __init__.py                         # Torna 'action_execution' um pacote Python.
-│   ├── speech_synthesis.py                 # Converte texto em fala (Text-to-Speech - TTS).
-│   └── movement_control.py                 # Controla os movimentos físicos do robô (motores, navegação).
-├── backend_api/                            # NOVO: Módulo para a API RESTful e WebSocket do backend.
-│   ├── __init__.py                         # Torna 'backend_api' um pacote Python.
-│   └── api_server.py                       # Servidor Flask que expõe endpoints para comunicação com o frontend.
-├── frontend/                               # NOVO: Diretório para o código do front-end web (HTML, CSS, JavaScript).
-│   ├── index.html                          # Página HTML principal que conterá a interface do usuário.
-│   ├── style.css                           # Arquivo CSS para estilização da interface.
-│   ├── script.js                           # Arquivo JavaScript para lógica do cliente e comunicação com o backend.
-│   └── assets/                             # Pasta para ativos estáticos do frontend (imagens, ícones, etc.).
-└── requirements.txt                        # Lista todas as dependências Python do projeto para instalação via pip.
+├── .env                     # 🔧 Variáveis de ambiente (senhas, API keys, configurações)
+├── config.py               # ⚙️ Configurações centralizadas do sistema
+├── docker-compose.yml      # 🐳 Orquestração de múltiplos containers (app, banco, redis, nginx)
+├── Dockerfile             # 📦 Receita para criar imagem Docker do Sora Robot
+├── main.py                # 🎮 PONTO DE ENTRADA PRINCIPAL - inicia todo o sistema
+└── requirements.txt       # 📚 Lista de todas as dependências Python necessárias
+```
+**🤖 action_execution/ - Execução de Ações Físicas**
+```
+├── movement_control.py    # 🦾 [FUTURO] Controle de movimentos robóticos/servos
+├── speech_synthesis.py    # 🗣️ Síntese de voz (TTS) - converte texto em fala
+└── __init__.py           # 📦 Marca como módulo Python
+```
+🌐 api/ - Interface de Comunicação
+```
+├── api_interface.py       # 🔌 API REST + WebSocket - ponte entre frontend e backend
+└── __init__.py           # 📦 Marca como módulo Python
+```
+🎤 audio_processing/ - Processamento de Áudio
+```
+├── audio_analysis.py      # 🎵 Análise prosódica e emocional do áudio
+├── microphone_handler.py  # 🎙️ Captura de áudio do microfone
+├── speech_recognition.py  # 🗣️➡️📝 Conversão de fala em texto (STT)
+└── __init__.py           # 📦 Marca como módulo Python
+```
+🧠 Core/ - Núcleo do Sistema
+```
+├── main_controller.py     # 🎮 Controlador principal - orquestra todos os módulos
+├── system_integration.py # 🔗 Integração entre todos os componentes do sistema
+└── __init__.py           # 📦 Marca como módulo Python
+```
+📊 data/ - Gerenciamento de Dados
+```
+├── collected_data/        # 📈 Dados coletados das interações
+│   ├── interaction_logs.py     # 📝 Sistema de logging de interações
+│   ├── learning_data_manager.py # 🎓 Gerenciador de dados para aprendizagem
+│   ├── __init__.py             # 📦 Marca como módulo Python
+│   └── raw_sensor_logs/        # 🔍 Logs brutos de sensores
+│       └── __init__.py         # 📦 Marca como módulo Python
+│
+├── knowledge_base/        # 📚 Base de conhecimento
+│   ├── event_info.json         # 📋 [FUTURO] Informações sobre eventos
+│   └── __init__.py             # 📦 Marca como módulo Python
+│
+└── user_profiles/         # 👥 Perfis de usuários
+    ├── profiles.json           # 👤 Dados dos perfis de usuários
+    └── __init__.py             # 📦 Marca como módulo Python
+```
+🌍 frontend/ - Interface Web
+```
+├── index.html            # 📄 Página web principal - interface do usuário
+├── script.js            # ⚡ JavaScript - lógica de interação e WebSocket
+├── style.css            # 🎨 Estilos visuais - design responsivo e moderno
+└── assets/              # 🖼️ Recursos estáticos (imagens, ícones, etc.)
+```
+📊 monitoring/ - Observabilidade
+```
+├── prometheus.yml        # 📈 Configuração de coleta de métricas
+└── grafana/             # 📊 Visualização de dados
+    ├── sora-dashboard.json    # 📋 Dashboard principal com métricas de IA
+    └── dashboards/            # 📊 Diretório para dashboards adicionais
+```
+🌐 nginx/ - Proxy Reverso
+```
+└── nginx.conf           # ⚖️ Configuração do load balancer e proxy
+```
+🧠 nlp/ - Processamento de Linguagem Natural
+```
+├── dialogue_manager.py   # 💬 Gerenciamento de contexto conversacional
+├── intent_recognition.py # 🎯 Reconhecimento de intenções do usuário
+├── sentiment_analysis.py # 💭 Análise de sentimento das mensagens
+└── __init__.py          # 📦 Marca como módulo Python
+```
+🤖 response_generation/ - Geração de Respostas
+```
+├── avatar_animation.py        # 🎭 Animações faciais e corporais do avatar
+├── llm_integration.py         # 🧠 Integração com LLMs (GPT, Claude, Gemini)
+├── video_animation_player.py  # 🎬 [VAZIO] Player de animações de vídeo
+└── __init__.py               # 📦 Marca como módulo Python
+```
+🛠️ scripts/ - Automação
+```
+└── setup.sh             # 🚀 Script de instalação automática completa
+```
+🔧 utils/ - Utilitários
+```
+├── constants.py         # 📊 Constantes globais do sistema
+├── helpers.py          # 🛠️ Funções auxiliares reutilizáveis
+├── logger.py           # 📝 Sistema de logging estruturado
+└── __init__.py         # 📦 Marca como módulo Python
+```
+👁️ vision_processing/ - Visão Computacional
+```
+├── body_pose_estimation.py # 🏃 Estimativa de pose corporal
+├── camera_handler.py       # 📷 Captura de frames da câmera
+├── emotion_analysis.py     # 😊 Detecção de emoções faciais
+├── facial_recognition.py   # 👤 Reconhecimento e detecção facial
+└── __init__.py            # 📦 Marca como módulo Python
 ```
 # Como Fazer o Projeto Funcionar (Passo a Passo)
 Siga estas instruções para configurar e rodar o projeto Sora em seu ambiente local.
