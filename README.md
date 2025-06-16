@@ -92,7 +92,7 @@ A arquitetura do Sora é modular, visando facilitar o desenvolvimento, a manuten
 ```
 ├── avatar_animation.py        # 🎭 Animações faciais e corporais do avatar
 ├── llm_integration.py         # 🧠 Integração com LLMs (GPT, Claude, Gemini)
-├── video_animation_player.py  # 🎬 [VAZIO] Player de animações de vídeo
+├── video_animation_player.py  # 🎬 Player de animações de vídeo
 └── __init__.py               # 📦 Marca como módulo Python
 ```
 🛠️ scripts/ - Automação
